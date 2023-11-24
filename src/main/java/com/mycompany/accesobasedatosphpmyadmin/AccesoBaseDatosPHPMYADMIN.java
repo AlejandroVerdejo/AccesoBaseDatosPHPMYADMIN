@@ -16,7 +16,7 @@ public class AccesoBaseDatosPHPMYADMIN {
     static final String PASS = "admin";
     
     private static String SELECT;
-    private static String INSERT = "INSERT INTO `videojuegos` (`ID`, `NOMBRE`, `GENERO`, `FECHA`, `COMPAÑIA`, `PRECIO`) VALUES (NULL, 'Octopath Traveler', 'RPG', '2018/07/13', 'Nintendo', '49.99')";
+    private static String INSERT;
     private static String UPDATE;
     private static String DELETE;
     private static String[] COLUMN = {"ID","NOMBRE","GENERO","FECHA","COMPAÑIA","PRECIO"};
@@ -153,13 +153,7 @@ public class AccesoBaseDatosPHPMYADMIN {
         {
             System.out.println("true");
             System.out.println(select);
-            select.replace("COMPA?IA", COLUMN[4]);
-            System.out.println(select);
-        }
-        else
-        {
-            System.out.println("false");
-            System.out.println(select);
+            select = select.replace("COMPA?IA", "COMPAÑIA");
         }
         try
         {
