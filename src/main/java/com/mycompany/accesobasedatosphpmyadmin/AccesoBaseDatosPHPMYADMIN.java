@@ -25,10 +25,8 @@ public class AccesoBaseDatosPHPMYADMIN {
     private static Connection conn = null;
     private static Statement stmt = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
         Scanner sc = new Scanner(System.in);
-        try { System.setOut(new PrintStream(System.out, true, "UTF-8"));} 
-        catch (UnsupportedEncodingException e) {System.out.println(e);}        
         try 
         {
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -51,7 +49,6 @@ public class AccesoBaseDatosPHPMYADMIN {
                         System.out.println("· 2 Buscar juego");
                         System.out.println("· 3 Comprobar nombre");
                         System.out.println("· 4 Consulta personalizada");
-                        System.out.println("· 0 Volver");
                         opc = sc.nextInt();
                         switch (opc)
                         {
@@ -67,7 +64,6 @@ public class AccesoBaseDatosPHPMYADMIN {
                                 System.out.println("· 4 Fecha");
                                 System.out.println("· 5 Compañia");
                                 System.out.println("· 6 Precio");
-                                System.out.println("· 0 Volver");
                                 opc = sc.nextInt();
                                 if (opc != 0)
                                 {
@@ -101,10 +97,9 @@ public class AccesoBaseDatosPHPMYADMIN {
                                 System.out.println("Escribe la consulta que quieras realizar:");
                                 sc.nextLine();
                                 SELECT = sc.nextLine();
+                                SELECT = (String) SELECT;
                                 select(SELECT);
                                 break;
-                            case 0:
-                                opc = -1;
                         }
                         
                         break;
@@ -134,20 +129,7 @@ public class AccesoBaseDatosPHPMYADMIN {
                         System.out.println("· 3 Fecha");
                         System.out.println("· 4 Compañia");
                         System.out.println("· 5 Precio");
-                        System.out.println("· 0 Volver");
-                        opc = sc.nextInt();
-                        if (opc != 0)
-                        {
-                            System.out.print("Nuevo valor de " + COLUMN[opc].toLowerCase() + ": ");
-                            sc.nextLine();
-                            cad = sc.nextLine();
-                            UPDATE = "UPDATE `videojuegos` SET " + COLUMN[opc] + " = '" + cad + "' WHERE ID = " + id;
-                            update(UPDATE);
-                        }
-                        else
-                        {
-                            opc = -1;
-                        }                        
+                        opc = sc.nextInt();                       
                         break;
                     case 4:
                             System.out.print("Escribe el nombre del juego que quieres borrar: ");
@@ -167,6 +149,18 @@ public class AccesoBaseDatosPHPMYADMIN {
     }
     public static void select(String select)
     {
+        if (select.contains("COMPA?IA"))
+        {
+            System.out.println("true");
+            System.out.println(select);
+            select.replace("COMPA?IA", COLUMN[4]);
+            System.out.println(select);
+        }
+        else
+        {
+            System.out.println("false");
+            System.out.println(select);
+        }
         try
         {
             ResultSet rs = stmt.executeQuery(select);
