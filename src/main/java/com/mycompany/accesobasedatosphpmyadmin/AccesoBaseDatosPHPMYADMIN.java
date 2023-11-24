@@ -151,8 +151,6 @@ public class AccesoBaseDatosPHPMYADMIN {
     {
         if (select.contains("COMPA?IA"))
         {
-            System.out.println("true");
-            System.out.println(select);
             select = select.replace("COMPA?IA", "COMPAÑIA");
         }
         try
