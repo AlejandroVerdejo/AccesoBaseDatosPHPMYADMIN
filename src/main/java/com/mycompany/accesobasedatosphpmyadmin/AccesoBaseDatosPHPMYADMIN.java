@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
+import oracle.ucp.jdbc.PoolDataSource;
+import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 public class AccesoBaseDatosPHPMYADMIN {
 
@@ -22,14 +24,24 @@ public class AccesoBaseDatosPHPMYADMIN {
     private static String[] COLUMN = {"ID","NOMBRE","GENERO","FECHA","COMPAÑIA","PRECIO"};
     private static String[] VALUES = new String[5];
     
+    //private static PoolDataSource pds = null;
+    
     private static Connection conn = null;
     private static Statement stmt = null;
 
-    public static void main(String[] args) throws UnsupportedEncodingException {
+    public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         try 
         {
-            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            PoolDataSource pds = PoolDataSourceFactory.getPoolDataSource();
+            
+            pds.setConnectionFactoryClassName("com.mysql.cj.jdbc.Driver");
+            pds.setURL(DB_URL);
+            pds.setUser(USER);
+            pds.setPassword(PASS);
+            pds.setInitialPoolSize(3);
+            
+            conn = pds.getConnection();
             stmt = conn.createStatement();
             int opc;
             String cad;
@@ -144,7 +156,7 @@ public class AccesoBaseDatosPHPMYADMIN {
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println("Error: \n" + e);
         }
     }
     public static void select(String select)
