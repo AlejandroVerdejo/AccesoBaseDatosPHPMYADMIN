@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -17,17 +18,17 @@ public class AccesoBaseDatosPHPMYADMIN {
     static final String USER = "admin";
     static final String PASS = "admin";
     
-    private static String SELECT;
-    private static String INSERT;
-    private static String UPDATE;
-    private static String DELETE;
-    private static String[] COLUMN = {"ID","NOMBRE","GENERO","FECHA","COMPAÑIA","PRECIO"};
-    private static String[] VALUES = new String[5];
+    static String SELECT;
+    static String INSERT;
+    static String UPDATE;
+    static String DELETE;
+    static String[] COLUMN = {"ID","NOMBRE","GENERO","FECHA","COMPAÑIA","PRECIO"};
+    static String[] VALUES = new String[5];
     
     //private static PoolDataSource pds = null;
     
-    private static Connection conn = null;
-    private static Statement stmt = null;
+    static Connection conn = null;
+    static Statement stmt = null;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -95,7 +96,7 @@ public class AccesoBaseDatosPHPMYADMIN {
                                 System.out.print("Escribe el nombre que quieres comprobar: ");
                                 cad = sc.nextLine();
                                 SELECT = "SELECT NOMBRE FROM VIDEOJUEGOS WHERE NOMBRE = '" + cad + "'";
-                                boolean check = comprobar(SELECT);
+                                boolean check = comprobar(cad);
                                 if (check)
                                 {
                                     System.out.println("Existe un videojuego con ese nombre");
@@ -109,7 +110,6 @@ public class AccesoBaseDatosPHPMYADMIN {
                                 System.out.println("Escribe la consulta que quieras realizar:");
                                 sc.nextLine();
                                 SELECT = sc.nextLine();
-                                SELECT = (String) SELECT;
                                 select(SELECT);
                                 break;
                         }
@@ -128,8 +128,7 @@ public class AccesoBaseDatosPHPMYADMIN {
                         VALUES[3] = sc.nextLine();
                         System.out.print(" Precio: [00.00] ");
                         VALUES[4] = sc.nextLine();  
-                        INSERT = "INSERT INTO `videojuegos` (`ID`, `NOMBRE`, `GENERO`, `FECHA`, `COMPAÑIA`, `PRECIO`) VALUES (NULL, '" + VALUES[0] + "', '" + VALUES[1] + "', '" + VALUES[2] + "', '" + VALUES[3] + "', '" + VALUES[4] + "')";
-                        insert(INSERT);
+                        insert(VALUES[0],VALUES[1],VALUES[2],VALUES[3],VALUES[4]);
                         break;
                     case 3:
                         System.out.println("Escribe el ID del juego que quieres modificar");
@@ -141,14 +140,17 @@ public class AccesoBaseDatosPHPMYADMIN {
                         System.out.println("· 3 Fecha");
                         System.out.println("· 4 Compañia");
                         System.out.println("· 5 Precio");
-                        opc = sc.nextInt();                       
+                        opc = sc.nextInt();
+                        System.out.print("Escribe el nuevo valor de " + COLUMN[opc].toLowerCase() + ": ");
+                        sc.nextLine();
+                        cad = sc.nextLine();
+                        update(opc,cad,id);
                         break;
                     case 4:
                             System.out.print("Escribe el nombre del juego que quieres borrar: ");
                             sc.nextLine();
                             cad = sc.nextLine();
-                            DELETE = "DELETE FROM VIDEOJUEGOS WHERE NOMBRE = '" + cad + "'";
-                            delete(DELETE);
+                            delete(cad);
                         break;
                 }
             } while (opc != 0);
@@ -170,7 +172,7 @@ public class AccesoBaseDatosPHPMYADMIN {
             ResultSet rs = stmt.executeQuery(select);
             while (rs.next()) 
             {
-                try { System.out.println(" ID: " + rs.getInt("ID")); }
+                try { System.out.println(" ID: " + rs.getString("ID")); }
                 catch (SQLException e) {}
                 try { System.out.println(" · Nombre: " + rs.getString("NOMBRE")); }
                 catch (SQLException e) {}
@@ -189,11 +191,18 @@ public class AccesoBaseDatosPHPMYADMIN {
             System.out.println("No se ha encontrado el juego indicado");
         }
     }
-    public static boolean insert(String insert)
+    public static boolean insert(String nombre, String genero, String fecha, String compañia, String precio)
     {
         try
         {
-            stmt.executeUpdate(insert);
+            String consulta = "INSERT INTO `videojuegos`(`ID`, `NOMBRE`, `GENERO`, `FECHA`, `COMPAÑIA`, `PRECIO`) VALUES (NULL,?,?,?,?,?)";
+            PreparedStatement sentencia = conn.prepareStatement(consulta);
+            sentencia.setString(1,nombre);
+            sentencia.setString(2,genero);
+            sentencia.setString(3, fecha);
+            sentencia.setString(4, compañia);
+            sentencia.setString(5, precio);
+            sentencia.executeUpdate(); 
             System.out.println("Juego añadido correctamente");
             return true;
         }
@@ -203,11 +212,16 @@ public class AccesoBaseDatosPHPMYADMIN {
             return false;
         }        
     }
-    public static boolean update(String update)
+    public static boolean update(int column, String valor,String id)
     {
         try
         {
-            stmt.executeUpdate(update);
+            /////////////////////////////////REVISAR ERRORES///////////////////////////////
+            String consulta = "UPDATE VIDEOJUEGOS SET " + COLUMN[column] + " = ? WHERE ID = ?";
+            PreparedStatement sentencia = conn.prepareStatement(consulta);
+            sentencia.setString(1,valor);
+            sentencia.setString(2, id);
+            sentencia.executeUpdate();            
             System.out.println("Juego actualizado correctamente");
             return true;
         }
@@ -217,11 +231,14 @@ public class AccesoBaseDatosPHPMYADMIN {
             return false;
         }        
     }
-    public static boolean delete(String delete)
+    public static boolean delete(String nombre)
     {
         try
         {
-            stmt.executeUpdate(delete);
+            String consulta = "DELETE FROM VIDEOJUEGOS WHERE NOMBRE = ? ";
+            PreparedStatement sentencia = conn.prepareStatement(consulta);
+            sentencia.setString(1,nombre);
+            sentencia.executeUpdate();
             System.out.println("Juego eliminado correctamente");
             return true;
         }
@@ -231,11 +248,14 @@ public class AccesoBaseDatosPHPMYADMIN {
             return false;
         }
     }
-    public static boolean comprobar(String select)
+    public static boolean comprobar(String nombre)
     {
         try
         {
-            ResultSet rs = stmt.executeQuery(select);
+            String consulta = "SELECT NOMBRE FROM VIDEOJUEGOS WHERE NOMBRE = ? ";
+            PreparedStatement sentencia = conn.prepareStatement(consulta);
+            sentencia.setString(1,nombre);
+            ResultSet rs = sentencia.executeQuery();
             while (rs.next())
             {
                 return true;
