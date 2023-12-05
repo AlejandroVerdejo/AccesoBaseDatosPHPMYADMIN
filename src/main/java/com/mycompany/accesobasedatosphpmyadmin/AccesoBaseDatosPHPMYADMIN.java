@@ -1,7 +1,5 @@
 package com.mycompany.accesobasedatosphpmyadmin;
 
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,35 +12,39 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 public class AccesoBaseDatosPHPMYADMIN {
 
+    //Los datos para entrar a la base de datos
     static final String DB_URL = "jdbc:mysql://localhost/JCVD";
     static final String USER = "admin";
     static final String PASS = "admin";
     
     static String SELECT;
-    static String INSERT;
-    static String UPDATE;
-    static String DELETE;
+    //Columnas de la base de datos
     static String[] COLUMN = {"ID","NOMBRE","GENERO","FECHA","COMPAÑIA","PRECIO"};
+    //Array para introducir los datos para crear nuevas entradas en la base de datos
     static String[] VALUES = new String[5];
     
-    //private static PoolDataSource pds = null;
-    
+    //Conexion a la base de datos para poder utilizarla en cualquier parte del codigo
     static Connection conn = null;
+    //Statement para poder utilizarlo en cualquier parte del codigo
     static Statement stmt = null;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         try 
         {
+            //Creamos el PoolDataSource
             PoolDataSource pds = PoolDataSourceFactory.getPoolDataSource();
             
+            //Introducimos los datos necesarios para conectar a la base de datos
             pds.setConnectionFactoryClassName("com.mysql.cj.jdbc.Driver");
             pds.setURL(DB_URL);
             pds.setUser(USER);
             pds.setPassword(PASS);
             pds.setInitialPoolSize(3);
             
+            //Iniciamos la conexion a la base de datos
             conn = pds.getConnection();
+            //Iniciamos el statement
             stmt = conn.createStatement();
             int opc;
             String cad;
@@ -163,25 +165,35 @@ public class AccesoBaseDatosPHPMYADMIN {
     }
     public static void select(String select)
     {
+        //En caso de que la consulta contenga la palabra 'COMPAÑIA', dara un error al contener una 'Ñ', por lo que se sustituira aqui automaticamentre para evitar errores
         if (select.contains("COMPA?IA"))
         {
             select = select.replace("COMPA?IA", "COMPAÑIA");
         }
         try
         {
+            //Ejecutara la consulta indicada
             ResultSet rs = stmt.executeQuery(select);
+            //Mientras que la consulta de resultados
             while (rs.next()) 
             {
+                //Se utiliza un try-catch con cada uno para en caso que la consulta no pida todos los datos, estos no se muestren y no de error
+                //Muestra la columna de 'ID'
                 try { System.out.println(" ID: " + rs.getString("ID")); }
                 catch (SQLException e) {}
+                //Muestra la columna de 'NOMBRE'
                 try { System.out.println(" · Nombre: " + rs.getString("NOMBRE")); }
                 catch (SQLException e) {}
+                //Muestra la columna de 'GENERO'
                 try { System.out.println(" · Genero: " + rs.getString("GENERO")); }
                 catch (SQLException e) {}
+                //Muestra la columna de 'FECHA'
                 try { System.out.println(" · Fecha de publicacion: " + rs.getString("FECHA")); }
                 catch (SQLException e) {}
+                //Muestra la columna de 'COMPAÑIA'
                 try { System.out.println(" · Compañia: " + rs.getString("COMPAÑIA")); }
                 catch (SQLException e) {}
+                //Muestra la columna de 'PRECIO'
                 try { System.out.println(" · Precio: " + rs.getString("PRECIO")); }
                 catch (SQLException e) {}                  
             }
@@ -195,20 +207,25 @@ public class AccesoBaseDatosPHPMYADMIN {
     {
         try
         {
+            //Crea un consulta preparada para introducir datos a la base de datos
             String consulta = "INSERT INTO `videojuegos`(`ID`, `NOMBRE`, `GENERO`, `FECHA`, `COMPAÑIA`, `PRECIO`) VALUES (NULL,?,?,?,?,?)";
             PreparedStatement sentencia = conn.prepareStatement(consulta);
+            //Sustituye las ? en la sentencia preparada por los valores enviados
             sentencia.setString(1,nombre);
             sentencia.setString(2,genero);
             sentencia.setString(3, fecha);
             sentencia.setString(4, compañia);
             sentencia.setString(5, precio);
+            //Ejecuta la sentencia de INSERT
             sentencia.executeUpdate(); 
             System.out.println("Juego añadido correctamente");
+            //Envia que se ha ejecutado la sentencia sin errores
             return true;
         }
         catch (SQLException e)
         {
             System.out.println("No se ha podido añadir el juego correctamente");
+            //Envia que ha ocurrido un error
             return false;
         }        
     }
@@ -216,18 +233,22 @@ public class AccesoBaseDatosPHPMYADMIN {
     {
         try
         {
-            /////////////////////////////////REVISAR ERRORES///////////////////////////////
+            //Crea la consulta preparada para actualizar los datos de la base de datos con la columna indicada
             String consulta = "UPDATE VIDEOJUEGOS SET " + COLUMN[column] + " = ? WHERE ID = ?";
             PreparedStatement sentencia = conn.prepareStatement(consulta);
+            //Sustituye la ? con los valores enviados
             sentencia.setString(1,valor);
             sentencia.setString(2, id);
+            //Ejecuta la sentencia de UPDATE
             sentencia.executeUpdate();            
             System.out.println("Juego actualizado correctamente");
+            //Envia que se ha ejecutado la sentencia sin errores
             return true;
         }
         catch (SQLException e)
         {
             System.out.println("No se ha podido modificar el juego indicado");
+            //Envia que ha ocurrido un error
             return false;
         }        
     }
@@ -235,16 +256,21 @@ public class AccesoBaseDatosPHPMYADMIN {
     {
         try
         {
+            //Crea la consulta preparada para eliminar datos de la base de datos
             String consulta = "DELETE FROM VIDEOJUEGOS WHERE NOMBRE = ? ";
             PreparedStatement sentencia = conn.prepareStatement(consulta);
+            //Sustituye la ? por el valor enviado
             sentencia.setString(1,nombre);
+            //Ejecuta la sentencia de DELETE
             sentencia.executeUpdate();
             System.out.println("Juego eliminado correctamente");
+            //Envia que se ha ejecutado la sentencia sin errores
             return true;
         }
         catch (SQLException e)
         {
             System.out.println("No se ha podido eliminar el juego indicado");
+            //Envia que ha ocurrido un error
             return false;
         }
     }
@@ -252,14 +278,20 @@ public class AccesoBaseDatosPHPMYADMIN {
     {
         try
         {
+            //Crea la consulta preparada para buscar el nombre
             String consulta = "SELECT NOMBRE FROM VIDEOJUEGOS WHERE NOMBRE = ? ";
             PreparedStatement sentencia = conn.prepareStatement(consulta);
+            //Sustituye la ? por el valor enviado
             sentencia.setString(1,nombre);
+            //Ejecuta la consulta
             ResultSet rs = sentencia.executeQuery();
+            //Si hay resultados
             while (rs.next())
             {
+                //Envia que ha encontrado un juego con ese nombre
                 return true;
             }
+            //Envia que no se han encontrado juegos con ese nombre
             return false;
         }
         catch (SQLException e)
